@@ -3,27 +3,33 @@ from django.test import RequestFactory
 from django.contrib.auth.models import User, AnonymousUser
 from products.views import product_detail
 from mixer.backend.django import mixer
+from django.test import TestCase
 import pytest
 
 @pytest.mark.django_db
-class TestViews:
-    def test_product_detail_authenticated(self):
+class TestViews(TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        super(TestViews, cls).setUpClass()
         mixer.blend('products.Product')
+        cls.factory = RequestFactory()
+
+    def test_product_detail_authenticated(self):
         path = reverse('detail', kwargs={
             'pk': 1
         })
-        request = RequestFactory().get(path)
+        request = self.factory.get(path)
         request.user = mixer.blend(User)
 
         response = product_detail(request, pk=1)
         assert response.status_code == 200
 
     def test_product_detail_unuthenticated(self):
-        mixer.blend('products.Product')
         path = reverse('detail', kwargs={
             'pk': 1
         })
-        request = RequestFactory().get(path)
+        request = self.factory.get(path)
         request.user = AnonymousUser()
 
         response = product_detail(request, pk=1)

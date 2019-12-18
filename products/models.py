@@ -7,5 +7,7 @@ class Product(models.Model):
     quantity = models.IntegerField()
     published_on = models.DateField()
 
+    @property
     def is_in_stock(self):
         return self.quantity > 0
+
